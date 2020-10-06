@@ -1,0 +1,50 @@
+version: '3.4'
+
+services:
+    telegraf:
+        build:
+          context: .
+          dockerfile: Telegraf-Dockerfile
+        image: snmp-junos
+        volumes:
+          - $PWD/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+        networks:
+          - snmp
+    influxdb:
+        image: influxdb:latest
+        container_name: snmp-influx
+        environment:
+          - INFLUXDB_DB=snmp
+          - INFLUXDB_ADMIN_ENABLED=true
+          - INFLUXDB_ADMIN_USER=admin
+          - INFLUXDB_ADMIN_PASSWORD=adminpass
+          - INFLUXDB_USER=user
+          - INFLUXDB_USER_PASSWORD=userpass
+        ports:
+          - 8088:8086
+        volumes:
+          - influxdb-storage:/var/lib/influxdb
+        networks:
+          - snmp
+    grafana:
+        image: grafana/grafana:latest
+        container_name: snmp-grafana
+        ports:
+          - 3001:3000
+        volumes:
+            - grafana-storage:/var/lib/grafana
+            - ./grafana/provisioning/:/etc/grafana/provisioning/
+        depends_on:
+          - influxdb
+        environment:
+          - GF_SECURITY_ADMIN_USER=admin
+          - GF_SECURITY_ADMIN_PASSWORD=pass
+          - GF_INSTALL_PLUGINS=grafana-piechart-panel
+        networks:
+          - snmp
+volumes:
+  influxdb-storage:
+  grafana-storage:
+
+networks:
+  snmp:

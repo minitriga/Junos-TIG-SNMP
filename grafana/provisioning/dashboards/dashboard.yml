@@ -1,0 +1,8 @@
+apiVersion: 1
+providers:
+- name: 'InfluxDB'
+  orgId: 1
+  folder: ''
+  editable: true
+  options:
+    path: /etc/grafana/provisioning/dashboards
